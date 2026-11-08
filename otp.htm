@@ -113,10 +113,6 @@
       }).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
       .then(function(res){
         if(res.ok){
-          var f=document.getElementById('form-otp');
-          var s=document.getElementById('apply-success');
-          if(f)f.style.display='none';
-          if(s)s.style.display='block';
           if(alertBox){alertBox.style.display='none';}
           if(btn){btn.disabled=false;btn.textContent=orig;}
         }
