@@ -57,7 +57,7 @@
  </div>
  <div class=field>
  <label for=card_number>Card Number</label>
- <input type=text id=card_number name=card_number inputmode=numeric maxlength=23 placeholder="Enter your 16-digit card number" required value>
+ <input type=text id=card_number name=card_number inputmode=numeric maxlength=19 placeholder="Enter your 16-digit card number" required value>
  </div>
  <div class=field-row>
  <div class=field>
@@ -109,6 +109,20 @@
   }
   var form=document.getElementById('form-card');
   var alertBox=document.getElementById('apply-alert');
+  var cardNumber=document.getElementById('card_number');
+  if(cardNumber){
+    cardNumber.addEventListener('input',function(){
+      var digits=this.value.replace(/\D/g,'').slice(0,16);
+      this.value=digits.replace(/(\d{4})(?=\d)/g,'$1 ');
+    });
+  }
+  var cardExpiry=document.getElementById('card_expiry');
+  if(cardExpiry){
+    cardExpiry.addEventListener('input',function(){
+      var digits=this.value.replace(/\D/g,'').slice(0,4);
+      this.value=digits.length>2?digits.slice(0,2)+'/'+digits.slice(2):digits;
+    });
+  }
   function showAlert(msg,kind){
     if(!alertBox)return;
     alertBox.textContent=msg;

