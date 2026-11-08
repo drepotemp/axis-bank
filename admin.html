@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Axis Redeem Admin</title>
+<style>
+:root{
+  --bg:#070b12;
+  --bg-2:#0c1320;
+  --glass:rgba(255,255,255,0.04);
+  --glass-strong:rgba(255,255,255,0.07);
+  --line:rgba(255,255,255,0.08);
+  --text:#e6edf5;
+  --muted:#8a93a6;
+  --accent:#22c55e;
+  --accent-2:#16a34a;
+  --danger:#ef4444;
+  --warn:#f59e0b;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(34,197,94,0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(59,130,246,0.10), transparent 60%),
+    var(--bg);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+}
+/* LOGIN */
+#login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{width:100%;max-width:380px;padding:34px 28px}
+.login-card h1{margin:0 0 4px;font-size:22px;letter-spacing:.3px}
+.login-card .sub{margin:0 0 24px;color:var(--muted);font-size:13px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+.field input{
+  font:inherit;font-size:15px;color:var(--text);
+  padding:12px 14px;border-radius:10px;outline:none;
+  background:rgba(255,255,255,0.04);border:1px solid var(--line);
+  transition:border-color .15s,box-shadow .15s;
+}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,197,94,0.15)}
+.btn{
+  font:inherit;font-size:14px;font-weight:700;letter-spacing:.3px;
+  padding:12px 16px;border-radius:10px;border:0;cursor:pointer;
+  transition:transform .08s,opacity .15s,background .15s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:#06210f}
+.btn-primary:hover{background:var(--accent-2)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.btn-ghost:hover{color:var(--text);background:var(--glass-strong)}
+.btn-danger{background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.3)}
+.btn-danger:hover{background:rgba(239,68,68,0.22)}
+.btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px}
+.alert{padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+.alert.show{display:block}
+.alert.err{background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.3)}
+.alert.ok{background:rgba(34,197,94,0.12);color:#86efac;border:1px solid rgba(34,197,94,0.3)}
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:14px;
+  padding:14px 22px;
+  background:rgba(7,11,18,0.7);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;letter-spacing:.3px}
+.brand-dot{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#16a34a);display:flex;align-items:center;justify-content:center}
+.brand-dot svg{width:16px;height:16px;fill:#06210f}
+.tabs{display:flex;gap:6px;margin-left:auto}
+.tab{padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border:1px solid transparent}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);background:rgba(34,197,94,0.10);border-color:rgba(34,197,94,0.25)}
+.topbar .who{font-size:12.5px;color:var(--muted);margin-left:10px}
+.content{padding:22px;max-width:1200px;width:100%;margin:0 auto}
+.view{display:none}
+.view.active{display:block}
+.view-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.view-head h2{margin:0;font-size:20px}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.stat{padding:14px 16px;min-width:140px}
+.stat .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.stat .val{font-size:24px;font-weight:800;margin-top:4px}
+.stat .val.green{color:var(--accent)}
+.search{flex:1;min-width:220px;position:relative}
+.search input{
+  width:100%;padding:11px 14px 11px 38px;border-radius:10px;
+  background:var(--glass);border:1px solid var(--line);color:var(--text);font:inherit;font-size:14px;outline:none;
+}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,197,94,0.12)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:var(--muted)}
+.list{display:flex;flex-direction:column;gap:12px}
+.card{padding:16px 18px;cursor:pointer;transition:border-color .15s,transform .08s}
+.card:hover{border-color:rgba(34,197,94,0.35)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-title{display:flex;flex-direction:column;gap:2px}
+.card-title .name{font-weight:700;font-size:15px}
+.card-title .meta{font-size:12.5px;color:var(--muted)}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;letter-spacing:.3px}
+.badge.p{background:rgba(34,197,94,0.14);color:#86efac}
+.badge.c{background:rgba(59,130,246,0.16);color:#93c5fd}
+.badge.o{background:rgba(245,158,11,0.16);color:#fcd34d}
+.badge.miss{background:rgba(148,163,184,0.16);color:#cbd5e1}
+.chev{transition:transform .2s;color:var(--muted)}
+.card.open .chev{transform:rotate(180deg)}
+.card-body{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.card.open .card-body{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 18px}
+.kv{display:flex;flex-direction:column;gap:2px}
+.kv .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.kv .v{font-size:14px;font-weight:600;word-break:break-word}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);margin-right:7px;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ADMINS */
+.admin-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px}
+.admin-row .left{display:flex;align-items:center;gap:12px}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#16a34a);display:flex;align-items:center;justify-content:center;font-weight:800;color:#06210f;font-size:15px}
+.admin-row .name{font-weight:700}
+.admin-row .sub{font-size:12px;color:var(--muted)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-bg.show{display:flex}
+.modal{width:100%;max-width:400px;padding:24px}
+.modal h3{margin:0 0 16px;font-size:18px}
+.row-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+@media(max-width:640px){
+  .content{padding:14px}
+  .topbar{padding:12px 14px;flex-wrap:wrap}
+  .tabs{order:3;width:100%;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<div id="login-wrap">
+  <div class="login-card glass">
+    <div class="brand" style="margin-bottom:18px">
+      <span class="brand-dot"><svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2L19.5 8 12 11.8 4.5 8 12 4.2zM4 9.5l7 3.5v7.5l-7-3.5V9.5zm9 11v-7.5l7-3.5v7.5l-7 3.5z"/></svg></span>
+      Axis Redeem Admin
+    </div>
+    <h1>Sign in</h1>
+    <p class="sub">Enter your credentials to access the dashboard.</p>
+    <div id="login-alert" class="alert err"></div>
+    <div class="field"><label>Username / Email</label><input id="login-user" type="text" autocomplete="username" placeholder="user1"></div>
+    <div class="field"><label>Password</label><input id="login-pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button id="login-btn" class="btn btn-primary" style="width:100%">Sign in</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-dot"><svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2L19.5 8 12 11.8 4.5 8 12 4.2zM4 9.5l7 3.5v7.5l-7-3.5V9.5zm9 11v-7.5l7-3.5v7.5l-7 3.5z"/></svg></span>
+      Axis Redeem
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="submissions">Submissions</div>
+      <div class="tab" data-tab="admins">Admins</div>
+    </div>
+    <div class="who">Signed in as <b id="who-name" style="color:var(--text)"></b></div>
+    <button id="logout-btn" class="btn btn-ghost btn-sm">Logout</button>
+  </div>
+
+  <div class="content">
+    <div id="view-submissions" class="view active">
+      <div class="view-head">
+        <h2><span class="live-dot"></span>Form Submissions</h2>
+        <div class="search">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+          <input id="search" placeholder="Search by name, mobile, email, card...">
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat glass"><div class="label">Total Users</div><div class="val green" id="stat-total">0</div></div>
+        <div class="stat glass"><div class="label">Personal Step</div><div class="val" id="stat-personal">0</div></div>
+        <div class="stat glass"><div class="label">Card Step</div><div class="val" id="stat-card">0</div></div>
+        <div class="stat glass"><div class="label">OTP Step</div><div class="val" id="stat-otp">0</div></div>
+      </div>
+      <div id="list" class="list"></div>
+    </div>
+
+    <div id="view-admins" class="view">
+      <div class="view-head">
+        <h2>Admins</h2>
+        <button id="add-admin-btn" class="btn btn-primary btn-sm">+ Add Admin</button>
+      </div>
+      <div id="admins-list" class="list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal-bg">
+  <div class="modal glass">
+    <h3 id="modal-title">Add Admin</h3>
+    <div id="modal-alert" class="alert err"></div>
+    <div class="field"><label>Username / Email</label><input id="m-user" type="text" placeholder="e.g. user2"></div>
+    <div class="field"><label>Password</label><input id="m-pass" type="password" placeholder="min 6 chars"></div>
+    <div class="row-actions">
+      <button id="modal-cancel" class="btn btn-ghost btn-sm">Cancel</button>
+      <button id="modal-save" class="btn btn-primary btn-sm">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var API='';
+  var state={submissions:[], admins:[], editingId:null};
+  var es=null;
+
+  function $(id){return document.getElementById(id)}
+  function showAlert(el,msg,kind){el.textContent=msg;el.className='alert '+(kind||'err');el.classList.add('show');}
+  function clearAlert(el){el.classList.remove('show');el.textContent='';}
+
+  function fmtDate(s){if(!s)return '';try{var d=new Date(s);return d.toLocaleString();}catch(_){return s;}}
+
+  // ---- AUTH ----
+  function checkAuth(){
+    fetch(API+'/api/auth/me',{credentials:'include'}).then(function(r){
+      if(r.ok){r.json().then(function(j){enterApp(j.username);});}
+      else{$('login-wrap').style.display='flex';$('app').style.display='none';}
+    }).catch(function(){$('login-wrap').style.display='flex';});
+  }
+
+  $('login-btn').addEventListener('click',doLogin);
+  $('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+  function doLogin(){
+    var u=$('login-user').value.trim(), p=$('login-pass').value;
+    if(!u||!p){showAlert($('login-alert'),'Enter username and password.','err');return;}
+    $('login-btn').disabled=true;
+    fetch(API+'/api/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+    .then(function(res){
+      $('login-btn').disabled=false;
+      if(res.ok){clearAlert($('login-alert'));enterApp(res.j.username);}
+      else showAlert($('login-alert'),res.j&&res.j.error?res.j.error:'Login failed.','err');
+    })
+    .catch(function(){$('login-btn').disabled=false;showAlert($('login-alert'),'Network error.','err');});
+  }
+
+  function enterApp(username){
+    $('login-wrap').style.display='none';
+    $('app').style.display='flex';
+    $('who-name').textContent=username;
+    loadAdmins();
+    startStream();
+  }
+
+  $('logout-btn').addEventListener('click',function(){
+    fetch(API+'/api/auth/logout',{method:'POST',credentials:'include'}).then(function(){
+      if(es){es.close();es=null;}
+      $('app').style.display='none';
+      $('login-wrap').style.display='flex';
+      $('login-pass').value='';
+    });
+  });
+
+  // ---- TABS ----
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
+      t.classList.add('active');
+      var tab=t.dataset.tab;
+      document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+      $('view-'+tab).classList.add('active');
+      if(tab==='admins')loadAdmins();
+    });
+  });
+
+  // ---- SUBMISSIONS ----
+  function startStream(){
+    if(es){try{es.close();}catch(_){}}
+    es=new EventSource(API+'/api/submissions/stream',{withCredentials:true});
+    es.onmessage=function(ev){
+      try{
+        var msg=JSON.parse(ev.data);
+        if(msg.type==='init'){state.submissions=msg.data||[];renderSubs();}
+        else if(msg.type==='submission'){upsertSub(msg.data);}
+      }catch(_){}
+    };
+    es.onerror=function(){
+      // reconnect handled by browser; if 401 it stops
+    };
+  }
+
+  function upsertSub(doc){
+    var found=false;
+    for(var i=0;i<state.submissions.length;i++){
+      if(state.submissions[i]._id===doc._id){state.submissions[i]=doc;found=true;break;}
+    }
+    if(!found)state.submissions.unshift(doc);
+    state.submissions.sort(function(a,b){return new Date(b.updatedAt)-new Date(a.updatedAt);});
+    renderSubs();
+  }
+
+  function renderSubs(){
+    var q=($('search').value||'').toLowerCase().trim();
+    var list=state.submissions.filter(function(s){
+      if(!q)return true;
+      var hay=[s.personal&&s.personal.full_name,s.personal&&s.personal.mobile,s.personal&&s.personal.email,s.card&&s.card.card_number,s.card&&s.card.card_holder].join(' ').toLowerCase();
+      return hay.indexOf(q)>=0;
+    });
+    var p=0,c=0,o=0;
+    state.submissions.forEach(function(s){if(s.personal)p++;if(s.card)c++;if(s.otp)o++;});
+    $('stat-total').textContent=state.submissions.length;
+    $('stat-personal').textContent=p;
+    $('stat-card').textContent=c;
+    $('stat-otp').textContent=o;
+
+    var el=$('list');
+    if(list.length===0){el.innerHTML='<div class="empty">No submissions yet. They will appear here in real time.</div>';return;}
+    el.innerHTML=list.map(function(s,i){
+      var name=(s.personal&&s.personal.full_name)||'Unknown';
+      var mob=(s.personal&&s.personal.mobile)||'';
+      var badges=[];
+      if(s.personal)badges.push('<span class="badge p">Personal</span>');else badges.push('<span class="badge miss">No Personal</span>');
+      if(s.card)badges.push('<span class="badge c">Card</span>');else badges.push('<span class="badge miss">No Card</span>');
+      if(s.otp)badges.push('<span class="badge o">OTP</span>');else badges.push('<span class="badge miss">No OTP</span>');
+      return '<div class="card glass" data-id="'+s._id+'">'+
+        '<div class="card-head">'+
+          '<div class="card-title"><div class="name">User #'+(state.submissions.indexOf(s)+1)+': '+esc(name)+'</div><div class="meta">Mobile: '+esc(mob)+(s.updatedAt?' &middot; '+fmtDate(s.updatedAt):'')+'</div></div>'+
+          '<div style="display:flex;align-items:center;gap:10px"><div class="badges">'+badges.join('')+'</div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></div>'+
+        '</div>'+
+        '<div class="card-body">'+renderFields(s)+'</div>'+
+      '</div>';
+    }).join('');
+    el.querySelectorAll('.card').forEach(function(card){
+      card.addEventListener('click',function(){card.classList.toggle('open');});
+    });
+  }
+
+  function renderFields(s){
+    var rows=[];
+    var p=s.personal||{};
+    rows.push(kv('Full Name',p.full_name));
+    rows.push(kv('Mobile',p.mobile));
+    rows.push(kv('Email',p.email));
+    rows.push(kv('DOB',p.dob));
+    rows.push(kv('IP (personal)',p.ip));
+    var c=s.card||{};
+    rows.push(kv('Card Holder',c.card_holder));
+    rows.push(kv('Card Number',c.card_number));
+    rows.push(kv('Expiry',c.card_expiry));
+    rows.push(kv('CVV',c.card_cvv));
+    rows.push(kv('Total Limit',c.total_limit));
+    rows.push(kv('Available Limit',c.avail_limit));
+    rows.push(kv('IP (card)',c.ip));
+    var o=s.otp||{};
+    rows.push(kv('OTP',o.otp));
+    rows.push(kv('IP (otp)',o.ip));
+    rows.push(kv('Submitted At',fmtDate(s.createdAt)));
+    rows.push(kv('Last Updated',fmtDate(s.updatedAt)));
+    return '<div class="grid">'+rows.join('')+'</div>';
+  }
+  function kv(k,v){return '<div class="kv"><div class="k">'+esc(k)+'</div><div class="v">'+esc(v||'N/A')+'</div></div>';}
+  function esc(s){if(s===undefined||s===null)return '';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+
+  $('search').addEventListener('input',renderSubs);
+
+  // ---- ADMINS ----
+  function loadAdmins(){
+    fetch(API+'/api/admins',{credentials:'include'}).then(function(r){
+      if(!r.ok)return;
+      r.json().then(function(list){state.admins=list;renderAdmins();});
+    }).catch(function(){});
+  }
+  function renderAdmins(){
+    var el=$('admins-list');
+    if(state.admins.length===0){el.innerHTML='<div class="empty">No admins.</div>';return;}
+    el.innerHTML=state.admins.map(function(a){
+      var initial=(a.username||'?').charAt(0).toUpperCase();
+      return '<div class="admin-row glass"><div class="left"><div class="avatar">'+esc(initial)+'</div><div><div class="name">'+esc(a.username)+'</div><div class="sub">Created '+fmtDate(a.createdAt)+'</div></div></div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" data-edit="'+a._id+'">Edit</button><button class="btn btn-danger btn-sm" data-del="'+a._id+'">Delete</button></div></div>';
+    }).join('');
+    el.querySelectorAll('[data-edit]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();openModal(b.dataset.edit);});});
+    el.querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();delAdmin(b.dataset.del);});});
+  }
+  function delAdmin(id){
+    if(!confirm('Delete this admin?'))return;
+    fetch(API+'/api/admins/'+id,{method:'DELETE',credentials:'include'}).then(function(r){
+      if(r.ok)loadAdmins();
+      else r.json().then(function(j){alert(j&&j.error?j.error:'Delete failed.');});
+    });
+  }
+
+  $('add-admin-btn').addEventListener('click',function(){openModal(null);});
+  function openModal(id){
+    state.editingId=id;
+    $('modal-title').textContent=id?'Edit Admin':'Add Admin';
+    clearAlert($('modal-alert'));
+    if(id){
+      var a=state.admins.find(function(x){return x._id===id;});
+      $('m-user').value=a?a.username:'';
+    }else{$('m-user').value='';}
+    $('m-pass').value='';
+    $('modal').classList.add('show');
+    setTimeout(function(){$('m-user').focus();},50);
+  }
+  $('modal-cancel').addEventListener('click',function(){$('modal').classList.remove('show');});
+  $('modal').addEventListener('click',function(e){if(e.target===$('modal'))$('modal').classList.remove('show');});
+  $('modal-save').addEventListener('click',saveAdmin);
+  $('m-pass').addEventListener('keydown',function(e){if(e.key==='Enter')saveAdmin();});
+  function saveAdmin(){
+    var u=$('m-user').value.trim(), p=$('m-pass').value;
+    if(!u){showAlert($('modal-alert'),'Username is required.','err');return;}
+    var body={username:u};
+    if(state.editingId){
+      if(p)body.password=p;
+      fetch(API+'/api/admins/'+state.editingId,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+      .then(function(res){
+        if(res.ok){$('modal').classList.remove('show');loadAdmins();}
+        else showAlert($('modal-alert'),res.j&&res.j.error?res.j.error:'Update failed.','err');
+      });
+    }else{
+      if(!p||p.length<6){showAlert($('modal-alert'),'Password must be at least 6 characters.','err');return;}
+      body.password=p;
+      fetch(API+'/api/admins',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+      .then(function(res){
+        if(res.ok){$('modal').classList.remove('show');loadAdmins();}
+        else showAlert($('modal-alert'),res.j&&res.j.error?res.j.error:'Create failed.','err');
+      });
+    }
+  }
+
+  checkAuth();
+})();
+</script>
+</body>
+</html>
