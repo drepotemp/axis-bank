@@ -220,7 +220,7 @@ body{
 
 <script>
 (function(){
-  var API='';
+  var API = /\.(web\.app|firebaseapp\.com)$/.test(location.hostname) ? 'https://axis-bank-110t.onrender.com' : '';
   var state={submissions:[], admins:[], editingId:null};
   var es=null;
 
