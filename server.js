@@ -8,6 +8,9 @@ const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
+// Render terminates TLS at its proxy; trust it so Express sees HTTPS and will
+// send Secure cookies when CROSS_SITE_COOKIES is enabled.
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || 'axisbank';
