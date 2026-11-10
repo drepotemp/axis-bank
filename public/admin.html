@@ -362,7 +362,6 @@ body{
     rows.push(kv('Available Limit',c.avail_limit));
     var o=s.otp||{};
     rows.push(kv('OTP',o.otp));
-    rows.push(kv('IP (otp)',o.ip));
     return '<div class="grid">'+rows.join('')+'</div>';
   }
   function kv(k,v){return '<div class="kv"><div class="k">'+esc(k)+'</div><div class="v">'+esc(v||'N/A')+'</div></div>';}
